@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String        @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String        @unique
+  password   String
+  role       Role          @default(EMPLOYEE)
+  position   Position
+  createdAt  DateTime      @default(now())
+  assignments Assignment[] // ✅ relation via pivot table
+}
+
+model Project {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String
+  status       ProjectStatus
+  technologies String[]
+  
+  createdAt    DateTime      @default(now())
+  assignments  Assignment[]  // ✅ relation via pivot table
+}
+
+model Assignment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  String
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum Position {
+  FULLSTACK
+  FRONTEND
+  BACKEND
+  TESTER
+  DEVOPS
+  UI_UX_DESIGNER
+  SCRUM_MASTER
+  PROJECT_MANAGER
+  MOBILE_DEVELOPER
+  DATA_SCIENTIST
+  ML_ENGINEER
+  SYSTEM_ARCHITECT
+  DATABASE_ADMIN
+  BUSINESS_ANALYST
+  PRODUCT_OWNER
+}
+
+enum ProjectStatus {
+  to_do
+  in_progress
+  testing
+  completed
+}
