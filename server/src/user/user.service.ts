@@ -85,12 +85,25 @@ export class UserService {
     });
   }
 
-  deleteUser(id: string) {
-    console.log('user Successfully deleted!');
-    return this.prisma.user.delete({
-      where: { id },
-    });
-  }
+ async deleteUser(id: string) {
+  // Delete all assignments linked to the user first
+  await this.prisma.assignment.deleteMany({
+    where: {
+      userId: id,
+    },
+  });
+
+  // Now delete the user safely
+  const user = await this.prisma.user.delete({
+    where: { id },
+  });
+
+  return {
+    success: true,
+    message: 'User successfully deleted',
+    user,
+  };
+}
   async updateProfile(userId, updateUserDto) {
     const { name, email, position, oldPassword, newPassword } = updateUserDto;
     const id = userId;
